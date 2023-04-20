@@ -3,7 +3,7 @@ from flask import Flask
 app = Flask(__name__)
 
 @app.route('/coffe')
-def all_coffe():
+def get_all_coffe():
     # get all the coffe reviews from the database
     # Serialize into JSON-format
     return # JSON file.
