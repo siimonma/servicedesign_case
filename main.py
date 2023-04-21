@@ -9,5 +9,10 @@ def get_all_coffe():
     return # JSON file.
 
 
+@app.route('/<profile_id>/reviews')
+def get_profile_reviews(profile_id):
+    pass
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
