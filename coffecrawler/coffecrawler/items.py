@@ -6,7 +6,6 @@
 import scrapy
 
 
-class CoffecrawlerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class CoffeeProduct(scrapy.Item):
+    name = scrapy.Field()
+    url = scrapy.Field()
