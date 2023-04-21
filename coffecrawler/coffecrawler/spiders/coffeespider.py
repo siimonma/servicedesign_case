@@ -1,5 +1,6 @@
 import scrapy
-
+from coffecrawler.items import CoffeeProduct
+from coffecrawler.itemloaders import CoffeeProductLoader
 
 class CoffeespiderSpider(scrapy.Spider):
 
@@ -9,5 +10,12 @@ class CoffeespiderSpider(scrapy.Spider):
     start_urls = ["http://nybryggt.nu/kaffe"]
 
     def parse(self, response):
-        pass
+        products = response.css('div.l-main')
+
+        for product in products:
+            products = CoffeeProductLoader(item=CoffeeProduct(), selector=product)
+            products.add_css('name', 'div.product-item__body h3::text')
+            products.add_css('url', 'div.product-item__img img::attr(src)')
+            print(products)
+            yield products.load_item()
 
