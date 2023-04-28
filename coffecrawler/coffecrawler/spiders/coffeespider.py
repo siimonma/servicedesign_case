@@ -16,6 +16,6 @@ class CoffeespiderSpider(scrapy.Spider):
             products = CoffeeProductLoader(item=CoffeeProduct(), selector=product)
             products.add_css('name', 'div.product-item__body h3::text')
             products.add_css('url', 'div.product-item__img img::attr(src)')
-            print(products)
+            # print(products)
             yield products.load_item()
 
