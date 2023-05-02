@@ -69,7 +69,7 @@ class CoffeReviewDB(SqliteDB):
         query = """
         CREATE TABLE IF NOT EXISTS Users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL,
+        username TEXT UNIQUE NOT NULL,
         regtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
         );
         """
@@ -98,18 +98,21 @@ class CoffeReviewDB(SqliteDB):
 
         self.execute_query(connection=connection, query=query)
 
-
-    def user_exists(self, email) -> bool:
+    def user_exists(self, username: str) -> bool:
         """Check if user already exists in db"""
-
         connection = self.open_connection(self.db_name)
-
+        query = f"""SELECT * FROM Users WHERE username={username};"""
+        rows = self.execute_read_query(connection=connection, query=query)
+        connection.close()
+        if len(rows) > 0:
+            return True
+        return False
 
     def get_user_review(self, user_id):
         """Returns all the reviews made by User:user_id"""
 
         connection = self.open_connection(self.db_name)
-        query = f"""SELECT * FROM Reviews WHERE id={user_id}"""
+        query = f"""SELECT * FROM Reviews WHERE id={user_id};"""
         rows = self.execute_read_query(connection, query)
         connection.close()
 
