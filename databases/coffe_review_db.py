@@ -1,3 +1,4 @@
+import json
 import os.path
 import sqlite3
 from sqlite3 import Error
@@ -86,14 +87,33 @@ class CoffeReviewDB(SqliteDB):
 
         self.execute_query(connection=connection, query=query)
 
+
+    def user_exists(self, email) -> bool:
+        """Check if user already exists in db"""
+
+        connection = self.open_connection(self.db_name)
+
+
     def get_user_review(self, user_id):
         """Returns all the reviews made by User:user_id"""
+
         connection = self.open_connection(self.db_name)
-        connection.row_factory = sqlite3.Row
         query = f"""SELECT * FROM Reviews WHERE id={user_id}"""
         rows = self.execute_read_query(connection, query)
         connection.close()
-        return rows
+
+        reviews_dict = {}
+        review_count = 1
+        for row in rows:
+            reviews_dict["r" + str(review_count)] = {
+                "user_id": row[0],
+                "coffe_name": row[1],
+                "review": row[2],
+                "timestamp": row[3]
+            }
+            review_count += 1
+        reviews_json = json.dumps(reviews_dict)
+        return reviews_json
 
     def insert_test_users(self):
         connection = self.open_connection(self.db_name)
