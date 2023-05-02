@@ -35,17 +35,17 @@ Authentication options:
 
 
 
-User:
+Users:
 	id: integer
 	name: string
 	regtime: timestamp
 
-User_auth:
+Users_auth:
 	user_id: integer
 	token: string
 	email: string
 
-Coffee_review:
+Coffee_reviews:
 	id: integer
 	user_id: integer
 	coffee_id: integer

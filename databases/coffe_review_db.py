@@ -69,17 +69,28 @@ class CoffeReviewDB(SqliteDB):
         query = """
         CREATE TABLE IF NOT EXISTS Users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+        name TEXT UNIQUE NOT NULL,
+        regtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
         );
         """
 
         self.execute_query(connection=connection, query=query)
 
         query = """
+                CREATE TABLE IF NOT EXISTS Users_auth(
+                id INTEGER REFERENCES Users(id),
+                token TEXT UNIQUE NOT NULL,
+                email TEXT NOT NULL
+                );
+                """
+
+        self.execute_query(connection=connection, query=query)
+
+        query = """
         CREATE TABLE IF NOT EXISTS Reviews(
-        id INTEGER REFERENCES users(id),
-        coffee_name TEXT UNIQUE,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER REFERENCES Users(id),
+        coffee_id INTEGER,
         review TEXT NOT NULL,
         review_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL 
         );
