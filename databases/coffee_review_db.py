@@ -3,8 +3,6 @@ import os.path
 import sqlite3
 from sqlite3 import Error
 import os
-from case_project.api_token import Random64Token
-# from case_project.main import app
 
 PATH_DB_TABLES = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,8 +22,8 @@ class SqliteDB:
         return connection
 
     @staticmethod
-    def execute_query(connection, query: str):
-        """Use this function to insert data to database"""
+    def execute_insert_query(connection, query: str):
+        """Executes a INSERT query on a database connection. """
         cursor = connection.cursor()
         try:
             cursor.execute(query)
@@ -55,7 +53,7 @@ class SqliteDB:
             print(f"The error {e} occurred!")
 
 
-class CoffeReviewDB(SqliteDB):
+class CoffeeReviewDB(SqliteDB):
     def __init__(self):
         self.db_name = "coffee"
         if not self.db_exists(self.db_name):
@@ -75,7 +73,7 @@ class CoffeReviewDB(SqliteDB):
         );
         """
 
-        self.execute_query(connection=connection, query=query)
+        self.execute_insert_query(connection=connection, query=query)
 
         query = """
                 CREATE TABLE IF NOT EXISTS Users_auth(
@@ -85,7 +83,7 @@ class CoffeReviewDB(SqliteDB):
                 );
                 """
 
-        self.execute_query(connection=connection, query=query)
+        self.execute_insert_query(connection=connection, query=query)
 
         query = """
         CREATE TABLE IF NOT EXISTS Reviews(
@@ -97,7 +95,7 @@ class CoffeReviewDB(SqliteDB):
         );
         """
 
-        self.execute_query(connection=connection, query=query)
+        self.execute_insert_query(connection=connection, query=query)
 
     def get_rows(self, query: str):
         """Returns all rows from SELECT query"""
@@ -134,7 +132,7 @@ class CoffeReviewDB(SqliteDB):
             }
         return users_dict
 
-    def get_user_json(self, user_id: int):
+    def get_user(self, user_id: int):
         """ Returns information stored in database about user with id: 'user_id'"""
         query = f"""SELECT * FROM Users WHERE id={user_id}"""
         return self.user_db_rows_to_dict(rows=self.get_rows(query=query))
@@ -173,7 +171,7 @@ class CoffeReviewDB(SqliteDB):
             ('Jane', 'janeisbetter')
         ;
         """
-        self.execute_query(connection, query)
+        self.execute_insert_query(connection, query)
         query = """
         INSERT INTO Reviews (id, coffee_name, review) VALUES
             (1, "Zoegas mörk rost", "Den va god"),
@@ -182,19 +180,19 @@ class CoffeReviewDB(SqliteDB):
             (2, "Arvid Nordqvist - Festival", "Hade jag köpt igen")
         ;
         """
-        self.execute_query(connection, query)
+        self.execute_insert_query(connection, query)
         connection.close()
 
     def add_new_user(self, username, email, token) -> dict:
         """ Add a user to database. """
         connection = self.open_connection(self.db_name)
         query = f"""INSERT INTO Users (username) VALUES ('{username}');"""
-        self.execute_query(connection, query)
+        self.execute_insert_query(connection, query)
         query = f"""SELECT id FROM Users WHERE username='{username}';"""
         new_user_id = self.execute_read_query(connection, query)[0][0]
         print(type(new_user_id))
         query = f"""INSERT INTO Users_auth (id, token, email) VALUES ({new_user_id}, '{token}', '{email}');"""
-        self.execute_query(connection, query)
+        self.execute_insert_query(connection, query)
         connection.close()
 
         new_user = {
@@ -207,6 +205,6 @@ class CoffeReviewDB(SqliteDB):
 
 
 if __name__ == '__main__':
-    review_db = CoffeReviewDB()
+    review_db = CoffeeReviewDB()
     print(review_db.add_new_user("simonma", "simonma@hej.com", "aosfnasnfae((9al=="))
     # review_db.insert_test_users()

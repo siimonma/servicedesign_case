@@ -1,21 +1,40 @@
 from flask import Flask, request, jsonify, make_response, json
-from case_project.databases.coffe_review_db import CoffeReviewDB
+from case_project.databases.coffee_review_db import CoffeeReviewDB
+from case_project.databases.coffee_info_json import CoffeInfoJSON
 from api_token import Random64Token
 from api_return_code_classes import APIClientError
 
 app = Flask(__name__)
-coffeReviewDB = CoffeReviewDB()
+coffeeReviewDB = CoffeeReviewDB()
+coffeeInfoJSON = CoffeInfoJSON()
 
 ###############################
 ####  COFFEE RELATED PATHS ####
 ###############################
 
 
-@app.route('/coffee', methods=['GET'])
-def get_all_coffe():
-    # get all the coffe reviews from the database
-    # Serialize into JSON-format
-    return # JSON file.
+@app.route('/coffee', methods=['GET', 'POST'])
+def get_all_coffee():
+    if request.method == 'GET':
+        # get all the coffee from the JSON-database
+        # Serialize into JSON-format
+        return # JSON file.
+
+    if request.method == 'POST':
+        # Get the JSON file sent with the post request.
+        # Check that the file is in the right format.
+        # Add coffee to the JSON-file database.
+        return # Entry created with the correct ID.
+
+
+@app.route('/coffee/search', methods=['GET'])
+def search_for():
+    try:
+        search_word = request.args['search_word']
+    except Exception:
+        raise APIClientError('Missing required parameters.', 400)
+    # Search the JSON-database after matching coffee.
+    return # JSON-object of matching results.
 
 
 @app.route('/coffee/<coffee_id>', methods=['GET', 'POST'])
@@ -24,9 +43,12 @@ def get_coffee_info(coffee_id):
     if request.method == 'POST':
         token = check_authorization()
         review = check_review_format()
-        coffeReviewDB.add_review(coffee_id, token, review)
-
+        coffeeReviewDB.add_review(coffee_id, token, review)
         return jsonify({'message': f'Added review'}), 201
+
+    if request.method == 'GET':
+        # Get information about coffee with id 'coffee_id'
+        return jsonify(coffeeInfoJSON.get_coffee(coffee_id)), 200
 
 
 def check_review_format() -> str:
@@ -54,9 +76,15 @@ def get_coffee_reviews(coffee_id):
     return
 
 
+@app.route('/coffee/reviews', methods=['GET'])
+def get_all_reviews():
+    return
+
+
 #############################
 ####  USER RELATED PATHS ####
 #############################
+
 
 def check_authorization() -> str:
     """ Checks the request authentication, raises error otherwise."""
@@ -65,7 +93,7 @@ def check_authorization() -> str:
     except KeyError:
         raise APIClientError('Authentication token missing in header.', 401)
 
-    if not coffeReviewDB.is_authorized_user(token):
+    if not coffeeReviewDB.is_authorized_user(token):
         raise APIClientError('Not a valid authentication token.', 401)
     return token
 
@@ -75,7 +103,7 @@ def get_users():
     """ Returns information about all users registered to coffee review API if authorized """
     check_authorization()
     return app.response_class(
-        response=json.dumps(coffeReviewDB.get_all_users()),
+        response=json.dumps(coffeeReviewDB.get_all_users()),
         status=200,
         mimetype='application/json'
     )
@@ -89,28 +117,35 @@ def register_user():
     except Exception:
         raise APIClientError('Missing required parameters.', 400)
 
-    if not coffeReviewDB.user_exists(username=username):
+    if not coffeeReviewDB.user_exists(username=username):
         token = Random64Token(token_lgth=50).token
-        coffeReviewDB.add_new_user(username=username, email=email, token=token)
+        coffeeReviewDB.add_new_user(username=username, email=email, token=token)
         return jsonify({'auth_token': token}), 201
     raise APIClientError('Username already exists.', 409)
 
 
 @app.route('/users/<profile_id>', methods=['GET'])
 def get_profile(profile_id):
-    if not coffeReviewDB.user_exists(user_id=profile_id):
+    """ Responds to URL-request with JSON format user information for id 'profile_id'"""
+    if not coffeeReviewDB.user_exists(user_id=profile_id):
         raise APIClientError('User does not exists.', 404)
-    return coffeReviewDB.get_user_json(profile_id), 200
+
+    return app.response_class(
+        response=json.dumps(coffeeReviewDB.get_user(profile_id)),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/users/<profile_id>/reviews', methods=['GET'])
 def get_profile_reviews(profile_id):
-    return coffeReviewDB.get_user_reviews(profile_id), 200
+    return coffeeReviewDB.get_user_reviews(profile_id), 200
 
 
 ################################
 ####  RETURN CODE HANDLERS  ####
 ################################
+
 
 @app.errorhandler(APIClientError)
 def client_error(e):
