@@ -123,7 +123,7 @@ class CoffeReviewDB(SqliteDB):
             return True
         return False
 
-    def user_rows_to_json(self, rows) -> dict:
+    def user_db_rows_to_dict(self, rows) -> dict:
         """Convert user information read from DB to dictionary-format"""
         users_dict = {}
         for row in rows:
@@ -132,17 +132,17 @@ class CoffeReviewDB(SqliteDB):
                 "username": row[1],
                 "regtime": row[2]
             }
-        return json.dumps(users_dict)
+        return users_dict
 
     def get_user_json(self, user_id: int):
         """ Returns information stored in database about user with id: 'user_id'"""
         query = f"""SELECT * FROM Users WHERE id={user_id}"""
-        return self.user_rows_to_json(rows=self.get_rows(query=query))
+        return self.user_db_rows_to_dict(rows=self.get_rows(query=query))
 
-    def get_all_users_json(self):
+    def get_all_users(self):
         """Returns all the users and their information in json-format"""
         query = f"""SELECT * FROM Users;"""
-        return self.user_rows_to_json(rows=self.get_rows(query=query))
+        return self.user_db_rows_to_dict(rows=self.get_rows(query=query))
 
     def get_user_reviews(self, user_id):
         """Returns all the reviews made by User:user_id"""

@@ -1,5 +1,3 @@
-from flask import jsonify, request
-
 
 class APIClientError(Exception):
     status_code = 400

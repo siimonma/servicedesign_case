@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response, json
 from case_project.databases.coffe_review_db import CoffeReviewDB
 from api_token import Random64Token
-from api_error import APIClientError
+from api_return_code_classes import APIClientError
 
 app = Flask(__name__)
 coffeReviewDB = CoffeReviewDB()
@@ -74,7 +74,11 @@ def check_authorization() -> str:
 def get_users():
     """ Returns information about all users registered to coffee review API if authorized """
     check_authorization()
-    return coffeReviewDB.get_all_users_json(), 200
+    return app.response_class(
+        response=json.dumps(coffeReviewDB.get_all_users()),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/users/register', methods=['POST'])
@@ -99,15 +103,14 @@ def get_profile(profile_id):
     return coffeReviewDB.get_user_json(profile_id), 200
 
 
-
 @app.route('/users/<profile_id>/reviews', methods=['GET'])
 def get_profile_reviews(profile_id):
     return coffeReviewDB.get_user_reviews(profile_id), 200
 
 
-##########################
-####  ERROR HANDLERS  ####
-##########################
+################################
+####  RETURN CODE HANDLERS  ####
+################################
 
 @app.errorhandler(APIClientError)
 def client_error(e):
