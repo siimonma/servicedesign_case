@@ -37,7 +37,7 @@ Authentication options:
 
 Users:
 	id: integer
-	name: string
+	username: string
 	regtime: timestamp
 
 Users_auth:

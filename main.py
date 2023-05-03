@@ -1,4 +1,4 @@
-from flask import Flask,request
+from flask import Flask, request, jsonify
 from case_project.databases.coffe_review_db import CoffeReviewDB
 import json
 from api_token import Random64Token
@@ -13,7 +13,7 @@ def get_all_coffe():
     return # JSON file.
 
 
-@app.route('/users/<profile_id>/reviews')
+@app.route('/users/<profile_id>/reviews', methods=['GET'])
 def get_profile_reviews(profile_id):
     reviews = coffeReviewDB.get_user_review(profile_id)
     return reviews
@@ -21,11 +21,16 @@ def get_profile_reviews(profile_id):
 @app.route('/register', methods=['POST'])
 def register_user():
     try:
-        name = request.args['username']
+        username = request.args['username']
         email = request.args['email']
-    except:
+    except Exception:
+        return jsonify({'error': 'Missing required information.'}), 400
 
-    token = Random64Token(token_lgth=50).token
+    if not coffeReviewDB.user_exists(username):
+        token = Random64Token(token_lgth=50).token
+        coffeReviewDB.add_new_user(username=username, email=email, token=token)
+        return jsonify({'auth_token': token}), 201
+    return jsonify({'error': 'Username already exists.'}), 409
 
 
 if __name__ == '__main__':

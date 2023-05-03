@@ -3,6 +3,7 @@ import os.path
 import sqlite3
 from sqlite3 import Error
 import os
+from case_project.api_token import Random64Token
 # from case_project.main import app
 
 PATH_DB_TABLES = os.path.abspath(os.path.dirname(__file__))
@@ -101,7 +102,7 @@ class CoffeReviewDB(SqliteDB):
     def user_exists(self, username: str) -> bool:
         """Check if user already exists in db"""
         connection = self.open_connection(self.db_name)
-        query = f"""SELECT * FROM Users WHERE username={username};"""
+        query = f"""SELECT * FROM Users WHERE username='{username}';"""
         rows = self.execute_read_query(connection=connection, query=query)
         connection.close()
         if len(rows) > 0:
@@ -149,7 +150,28 @@ class CoffeReviewDB(SqliteDB):
         self.execute_query(connection, query)
         connection.close()
 
+    def add_new_user(self, username, email, token) -> dict:
+        """ Add a user to database. """
+        connection = self.open_connection(self.db_name)
+        query = f"""INSERT INTO Users (username) VALUES ('{username}');"""
+        self.execute_query(connection, query)
+        query = f"""SELECT id FROM Users WHERE username='{username}';"""
+        new_user_id = self.execute_read_query(connection, query)[0][0]
+        print(type(new_user_id))
+        query = f"""INSERT INTO Users_auth (id, token, email) VALUES ({new_user_id}, '{token}', '{email}');"""
+        self.execute_query(connection, query)
+        connection.close()
+
+        new_user = {
+            "id": new_user_id,
+            "username": username,
+            "email": email,
+            "token": token
+        }
+        return new_user
+
 
 if __name__ == '__main__':
     review_db = CoffeReviewDB()
-    review_db.insert_test_users()
+    print(review_db.add_new_user("simonma", "simonma@hej.com", "aosfnasnfae((9al=="))
+    # review_db.insert_test_users()
