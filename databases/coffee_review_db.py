@@ -203,6 +203,9 @@ class CoffeeReviewDB(SqliteDB):
         }
         return new_user
 
+    def add_review(self, coffee_id: int, token: str, review: dict):
+        pass
+
 
 if __name__ == '__main__':
     review_db = CoffeeReviewDB()

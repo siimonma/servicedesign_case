@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response, json
+from flask import Flask, request, jsonify, json
 from case_project.databases.coffee_review_db import CoffeeReviewDB
 from case_project.databases.coffee_info_json import CoffeInfoJSON
 from api_token import Random64Token
@@ -51,14 +51,14 @@ def get_coffee_info(coffee_id):
         return jsonify(coffeeInfoJSON.get_coffee(coffee_id)), 200
 
 
-def check_review_format() -> str:
+def check_review_format() -> dict:
     """
     Checks if the POSTed review is in the right format,
     raises error otherwise.
     """
     try:
         review = request.get_json()
-    except Exception as e:
+    except Exception:
         raise APIClientError('No valid JSON-object in body.')
 
     if len(review) != 1:
