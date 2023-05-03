@@ -1,15 +1,13 @@
 import scrapy
-from scrapy.crawler import CrawlerProcess
-from scrapy.selector import Selector
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from scrapy.selector import Selector
 import time
-from scrapy.exporters import JsonItemExporter
-from coffecrawler.coffecrawler.items import CoffeeProduct
-from coffecrawler.coffecrawler.itemloaders import CoffeeProductLoader
-
+from coffecrawler.items import CoffeeProduct
+from coffecrawler.itemloaders import CoffeeProductLoader
 
 class CoffeespiderSpider(scrapy.Spider):
     name = "coffeespider"
@@ -28,7 +26,7 @@ class CoffeespiderSpider(scrapy.Spider):
         self.driver = webdriver.Chrome(service=service, options=options)
 
         for url in self.start_urls:
-            yield scrapy.Request(url, callback=self.parse)
+            yield scrapy.Request(url, self.parse)
 
     def parse(self, response):
         self.driver.get(response.url)
@@ -50,6 +48,7 @@ class CoffeespiderSpider(scrapy.Spider):
             # Scroll down to load more content
             self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
 
-            if time.time() - start_time >= 10:
+            # Check if reaching the end of the page
+            end_of_page = self.driver.find_elements(By.XPATH, "//div[@class='product-listing-container']/p[contains(text(), 'End of page')]")
+            if time.time() - start_time >= 5:
                 break
-

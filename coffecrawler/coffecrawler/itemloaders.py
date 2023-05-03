@@ -4,4 +4,4 @@ from scrapy.loader import ItemLoader
 
 class CoffeeProductLoader(ItemLoader):
     default_output_processor = TakeFirst()
-    url_in = MapCompose(lambda x: 'http://nybryggt.nu/kaffe' + x)
+    #url_in = MapCompose(lambda x: 'http://nybryggt.nu/kaffe' + x)
