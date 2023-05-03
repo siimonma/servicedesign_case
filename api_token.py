@@ -16,7 +16,7 @@ class Random64Token:
 
     @staticmethod
     def get_random_string(lgth: int):
-        """ Returns a random string with length lgth, from ascii characters"""
+        """ Returns a random string built on ascii characters, with length 'lgth'"""
         random_str = ""
         if lgth > 0:
             while lgth > 0:

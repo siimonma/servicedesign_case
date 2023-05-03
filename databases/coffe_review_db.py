@@ -99,17 +99,52 @@ class CoffeReviewDB(SqliteDB):
 
         self.execute_query(connection=connection, query=query)
 
-    def user_exists(self, username: str) -> bool:
-        """Check if user already exists in db"""
+    def get_rows(self, query: str):
+        """Returns all rows from SELECT query"""
         connection = self.open_connection(self.db_name)
-        query = f"""SELECT * FROM Users WHERE username='{username}';"""
-        rows = self.execute_read_query(connection=connection, query=query)
+        rows = self.execute_read_query(connection, query)
         connection.close()
+        return rows
+
+    def user_exists(self, username: str = "", user_id: int = 0) -> bool:
+        """Check if user already exists in db"""
+        query = f"""SELECT * FROM Users WHERE username='{username}' or id='{user_id}';"""
+        rows = self.get_rows(query=query)
         if len(rows) > 0:
             return True
         return False
 
-    def get_user_review(self, user_id):
+    def is_authorized_user(self, token: str) -> bool:
+        """ Checks if token is a valid user token."""
+        # Add username check & match up id from table Users and Token table.
+        query = f"""SELECT * FROM Users_auth WHERE token='{token}'"""
+        rows = self.get_rows(query=query)
+        if len(rows) > 0:
+            return True
+        return False
+
+    def user_rows_to_json(self, rows) -> dict:
+        """Convert user information read from DB to dictionary-format"""
+        users_dict = {}
+        for row in rows:
+            users_dict[str(row[0])] = {
+                "id": row[0],
+                "username": row[1],
+                "regtime": row[2]
+            }
+        return json.dumps(users_dict)
+
+    def get_user_json(self, user_id: int):
+        """ Returns information stored in database about user with id: 'user_id'"""
+        query = f"""SELECT * FROM Users WHERE id={user_id}"""
+        return self.user_rows_to_json(rows=self.get_rows(query=query))
+
+    def get_all_users_json(self):
+        """Returns all the users and their information in json-format"""
+        query = f"""SELECT * FROM Users;"""
+        return self.user_rows_to_json(rows=self.get_rows(query=query))
+
+    def get_user_reviews(self, user_id):
         """Returns all the reviews made by User:user_id"""
 
         connection = self.open_connection(self.db_name)

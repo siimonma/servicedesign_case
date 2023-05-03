@@ -2,9 +2,13 @@ from scrapy.crawler import CrawlerProcess
 from coffecrawler.coffecrawler.spiders.coffeespider import CoffeespiderSpider
 import json
 
+
 class Utf8JsonPipeline:
+    def __init__(self):
+        self.file = None
+
     def open_spider(self, spider):
-        self.file = open('data.json', 'w', encoding='utf-8')
+        self.file = open('databases/data.json', 'w', encoding='utf-8')
 
     def close_spider(self, spider):
         self.file.close()
