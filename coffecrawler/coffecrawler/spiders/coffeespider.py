@@ -7,8 +7,8 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 from scrapy.exporters import JsonItemExporter
-from coffecrawler.coffecrawler.items import CoffeeProduct
-from coffecrawler.coffecrawler.itemloaders import CoffeeProductLoader
+from case_project.coffecrawler.coffecrawler.items import CoffeeProduct
+from case_project.coffecrawler.coffecrawler.itemloaders import CoffeeProductLoader
 
 
 class CoffeespiderSpider(scrapy.Spider):

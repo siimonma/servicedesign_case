@@ -123,13 +123,15 @@ class CoffeeReviewDB(SqliteDB):
 
     def user_db_rows_to_dict(self, rows) -> dict:
         """Convert user information read from DB to dictionary-format"""
-        users_dict = {}
+        users_dict = {
+            'users': []
+        }
         for row in rows:
-            users_dict[str(row[0])] = {
+            users_dict['users'].append({
                 "id": row[0],
                 "username": row[1],
                 "regtime": row[2]
-            }
+            })
         return users_dict
 
     def get_user(self, user_id: int):
