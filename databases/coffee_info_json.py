@@ -59,10 +59,11 @@ class SaveToJSON:
         self.data = []
 
     def close_spider(self, spider):
-        with open(PATH_TO_JSON_FILE, 'w', encoding='utf-8') as file:
+        with open('data.json', 'w', encoding='utf-8') as file:
             json.dump(self.data, file, ensure_ascii=False, indent=4)
 
     def process_item(self, item, spider):
+        item['id'] = item['id'][0]  # Save the ID as a str and not a list.
         self.data.append(dict(item))
         return item
 
