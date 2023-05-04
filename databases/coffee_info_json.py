@@ -26,7 +26,7 @@ class CoffeInfoJSON:
         process.start()
 
     def get_coffee(self, coffee_id: int):
-        pass
+        return self.get_coffee_search(coffee_id=coffee_id)
 
     @staticmethod
     def get_all_coffee():
@@ -39,12 +39,16 @@ class CoffeInfoJSON:
             file_data = json.load(file)
             return file_data
 
-    def get_coffee_search(self, search_word: str):
+    def get_coffee_search(self, search_word: str = None, coffee_id: str = None):
         coffee_dict = self.get_all_coffee()
         search_result = {'coffee': []}
         for coffee in coffee_dict['coffee']:
-            if search_word.strip().lower() in coffee['name'].strip().lower():
-                search_result['coffee'].append(coffee)
+            if search_word:
+                if search_word.strip().lower() in coffee['name'].strip().lower():
+                    search_result['coffee'].append(coffee)
+            if coffee_id:
+                if coffee_id == coffee['id']:
+                    search_result['coffee'].append(coffee)
         return search_result
 
     def add_coffee(self, name, url):
@@ -59,7 +63,7 @@ class SaveToJSON:
         self.data = []
 
     def close_spider(self, spider):
-        with open('data.json', 'w', encoding='utf-8') as file:
+        with open(PATH_TO_JSON_FILE, 'w', encoding='utf-8') as file:
             json.dump(self.data, file, ensure_ascii=False, indent=4)
 
     def process_item(self, item, spider):

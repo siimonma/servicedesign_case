@@ -1,0 +1,19 @@
+
+OUTLINE:
+
+- TITELSIDA
+- INNEHÅLLSFÖRTECKNING
+- INLEDNING
+
+- GRUPPEN ARBETSFÖRDELNING
+- RESULTAT
+--- Systembeskrivning
+--- Beskrivning av service design
+--- Beskrivning av slutgiltig funktionalitet och hur den knyter in i Service Design (motivering bakom hur systemet fungerar)
+--- Diskussion: Sammanfatta, framtida förbättringar.
+- BILAGOR
+--- API-dokumentation
+--- TEX. Större bilder från Service Design-delar, Personas etc.
+- REFERENCER
+
+

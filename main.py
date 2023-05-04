@@ -45,7 +45,6 @@ def search_for():
 
 @app.route('/coffee/<coffee_id>', methods=['GET', 'POST'])
 def get_coffee_info(coffee_id):
-    # TODO-Check if coffee_id exists in DB.
     if request.method == 'POST':
         token = check_authorization()
         review = check_review_format()
@@ -53,8 +52,13 @@ def get_coffee_info(coffee_id):
         return jsonify({'message': f'Added review'}), 201
 
     if request.method == 'GET':
+        # TODO-Check if coffee_id exists in DB.
         # Get information about coffee with id 'coffee_id'
-        return jsonify(coffeeInfoJSON.get_coffee(coffee_id)), 200
+        return app.response_class(
+            response=json.dumps(coffeeInfoJSON.get_coffee(coffee_id=coffee_id)),
+            status=200,
+            mimetype='application/json'
+        )
 
 
 def check_review_format() -> dict:
