@@ -9,3 +9,4 @@ import scrapy
 class CoffeeProduct(scrapy.Item):
     name = scrapy.Field()
     url = scrapy.Field()
+    id = scrapy.Field()

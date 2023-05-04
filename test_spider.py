@@ -3,25 +3,23 @@ from coffecrawler.coffecrawler.spiders.coffeespider import CoffeespiderSpider
 import json
 
 
-class Utf8JsonPipeline:
-    def __init__(self):
-        self.file = None
-
+class SaveToJSON:
     def open_spider(self, spider):
-        self.file = open('databases/data.json', 'w', encoding='utf-8')
+        self.data = []
 
     def close_spider(self, spider):
-        self.file.close()
+        with open('data.json', 'w', encoding='utf-8') as file:
+            json.dump(self.data, file, ensure_ascii=False, indent=4)
 
     def process_item(self, item, spider):
-        line = json.dumps(dict(item), ensure_ascii=False) + "\n"
-        self.file.write(line)
+        item['id'] = item['id'][0]  # Save the ID as a str and not a list.
+        self.data.append(dict(item))
         return item
 
 
 process = CrawlerProcess(settings={
     'ITEM_PIPELINES': {
-        '__main__.Utf8JsonPipeline': 300,
+        '__main__.SaveToJSON': 300,
     },
     'FEED_EXPORT_ENCODING': 'utf-8',
 })
