@@ -6,7 +6,7 @@ from api_return_code_classes import APIClientError
 
 app = Flask(__name__)
 coffeeReviewDB = CoffeeReviewDB()
-coffeeInfoJSON = CoffeInfoJSON()
+coffeeInfoJSON = CoffeInfoJSON(initiate=False)
 
 ###############################
 ####  COFFEE RELATED PATHS ####
@@ -16,9 +16,11 @@ coffeeInfoJSON = CoffeInfoJSON()
 @app.route('/coffee', methods=['GET', 'POST'])
 def get_all_coffee():
     if request.method == 'GET':
-        # get all the coffee from the JSON-database
-        # Serialize into JSON-format
-        return # JSON file.
+        return app.response_class(
+            response=json.dumps(coffeeInfoJSON.get_all_coffee()),
+            status=200,
+            mimetype='application/json'
+        )
 
     if request.method == 'POST':
         # Get the JSON file sent with the post request.
@@ -33,8 +35,12 @@ def search_for():
         search_word = request.args['search_word']
     except Exception:
         raise APIClientError('Missing required parameters.', 400)
-    # Search the JSON-database after matching coffee.
-    return # JSON-object of matching results.
+
+    return app.response_class(
+        response=json.dumps(coffeeInfoJSON.get_coffee_search(search_word=search_word)),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/coffee/<coffee_id>', methods=['GET', 'POST'])

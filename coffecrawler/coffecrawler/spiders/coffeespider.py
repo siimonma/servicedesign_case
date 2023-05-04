@@ -1,12 +1,14 @@
 import scrapy
+from scrapy.crawler import CrawlerProcess
 from scrapy.selector import Selector
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import time
-from coffecrawler.coffecrawler.items import CoffeeProduct
-from coffecrawler.coffecrawler.itemloaders import CoffeeProductLoader
+from scrapy.exporters import JsonItemExporter
+from case_project.coffecrawler.coffecrawler.items import CoffeeProduct
+from case_project.coffecrawler.coffecrawler.itemloaders import CoffeeProductLoader
 
 
 class CoffeespiderSpider(scrapy.Spider):
@@ -38,18 +40,16 @@ class CoffeespiderSpider(scrapy.Spider):
 
             for product in products:
                 product_url = product.attrib['href']
-
                 if product_url not in self.scraped_urls:
                     self.scraped_urls.add(product_url)
                     product_loader = CoffeeProductLoader(item=CoffeeProduct(), selector=product)
                     product_loader.add_css('name', '::text')
                     product_loader.add_css('url', '::attr(href)')
-                    product_loader.add_css('id', '::attr(href)')
                     yield product_loader.load_item()
 
             # Scroll down to load more content
             self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
 
-            # Break the endless loop
             if time.time() - start_time >= 10:
                 break
+
