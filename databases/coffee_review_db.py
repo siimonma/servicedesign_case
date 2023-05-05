@@ -144,27 +144,6 @@ class CoffeeReviewDB(SqliteDB):
         query = f"""SELECT * FROM Users;"""
         return self.user_db_rows_to_dict(rows=self.get_rows(query=query))
 
-    def get_user_reviews(self, user_id):
-        """Returns all the reviews made by User:user_id"""
-
-        connection = self.open_connection(self.db_name)
-        query = f"""SELECT * FROM Reviews WHERE id={user_id};"""
-        rows = self.execute_read_query(connection, query)
-        connection.close()
-
-        reviews_dict = {}
-        review_count = 1
-        for row in rows:
-            reviews_dict["r" + str(review_count)] = {
-                "user_id": row[0],
-                "coffe_name": row[1],
-                "review": row[2],
-                "timestamp": row[3]
-            }
-            review_count += 1
-        reviews_json = json.dumps(reviews_dict)
-        return reviews_json
-
     def insert_test_users(self):
         connection = self.open_connection(self.db_name)
         query = """
@@ -190,9 +169,10 @@ class CoffeeReviewDB(SqliteDB):
         connection = self.open_connection(self.db_name)
         query = f"""INSERT INTO Users (username) VALUES ('{username}');"""
         self.execute_insert_query(connection, query)
+
         query = f"""SELECT id FROM Users WHERE username='{username}';"""
         new_user_id = self.execute_read_query(connection, query)[0][0]
-        print(type(new_user_id))
+
         query = f"""INSERT INTO Users_auth (id, token, email) VALUES ({new_user_id}, '{token}', '{email}');"""
         self.execute_insert_query(connection, query)
         connection.close()
@@ -206,10 +186,68 @@ class CoffeeReviewDB(SqliteDB):
         return new_user
 
     def add_review(self, coffee_id: int, token: str, review: dict):
+        """ Adds a review to coffee review database"""
+        query = f"""SELECT id FROM Users_auth WHERE token='{token}';"""
+        user_id = self.get_rows(query=query)[0][0]
+
+        query = f"""INSERT INTO Reviews (user_id, coffee_id, review) 
+        VALUES ({user_id}, {coffee_id}, '{review['review']}')"""
+        connection = self.open_connection(self.db_name)
+        self.execute_insert_query(connection=connection, query=query)
+        review_id = self.execute_read_query(connection=connection,
+                                            query="""SELECT last_insert_rowid();""")[0][0]
+        review_entry = self.execute_read_query(connection=connection,
+                                               query=f"""SELECT * FROM Reviews WHERE id={review_id}""")
+        connection.close()
+        return {'review': {
+            'id': review_id,
+            'user_id': review_entry[0][1],
+            'coffee_id': review_entry[0][2],
+            'review': review_entry[0][3],
+            'timestamp': review_entry[0][4]
+        }}
+
+    def coffee_reviews_entry_to_dict(self, rows: list) -> dict:
+        """Convert review entries from Reviews table, draw from database, to dictionary."""
+        reviews = {'reviews': []}
+        for row in rows:
+            reviews['reviews'].append(
+                {
+                    'id': row[0],
+                    'user_id': row[1],
+                    'coffee_id': row[2],
+                    'review': row[3],
+                    'time_stamp': row[4]
+                }
+            )
+        return reviews
+
+    def get_reviews(self, coffee_id: str = None, user_id: int = None, review_id: int = None) -> dict:
+        """Returns all coffee reviews connected to 'coffee_id' from database"""
+        query = ""
+        if review_id:
+            query = f"""SELECT * FROM Reviews WHERE id='{review_id}';"""
+        elif user_id and coffee_id:
+            query = f"""SELECT * FROM Reviews WHERE user_id='{user_id}' AND coffee_id='{coffee_id}';"""
+        elif user_id:
+            query = f"""SELECT * FROM Reviews WHERE user_id='{user_id}';"""
+        elif coffee_id:
+            query = f"""SELECT * FROM Reviews WHERE coffee_id='{coffee_id}';"""
+        else:
+            query = f"""SELECT * FROM Reviews;"""
+        return self.coffee_reviews_entry_to_dict(self.get_rows(query=query))
+
+    def update_review(self, review_id: int, txt: str):
+        pass
+
+    def delete_review(self, review_id: int):
         pass
 
 
 if __name__ == '__main__':
     review_db = CoffeeReviewDB()
-    print(review_db.add_new_user("simonma", "simonma@hej.com", "aosfnasnfae((9al=="))
+    print(review_db.add_review(123,
+                               'Z1g5JlgmL3EsM3ksPVxKKF0wLytrfHU+KTthWC9BLDh8cUxecy5ZUWQwa1tiOidePVw=',
+                               {'review': 'God och fräsch!'}))
+    # print(review_db.add_new_user("simonma", "simonma@hej.com", "aosfnasnfae((9al=="))
     # review_db.insert_test_users()

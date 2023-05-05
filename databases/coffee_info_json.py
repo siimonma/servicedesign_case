@@ -25,7 +25,14 @@ class CoffeInfoJSON:
         process.crawl(CoffeespiderSpider)
         process.start()
 
-    def get_coffee(self, coffee_id: int):
+    def coffee_exists(self, coffee_id: str) -> bool:
+        """Checks coffee database to see if coffee id exists"""
+        search_result = self.get_coffee(coffee_id=coffee_id)
+        if len(search_result['coffee']) != 0:
+            return True
+        return False
+
+    def get_coffee(self, coffee_id: str):
         return self.get_coffee_search(coffee_id=coffee_id)
 
     @staticmethod
@@ -73,4 +80,5 @@ class SaveToJSON:
 
 
 if __name__ == '__main__':
-    pprint(CoffeInfoJSON(initiate=False).get_all_coffee())
+    CoffeInfoJSON(initiate=False).coffee_exists('7310731101611')
+    # pprint(CoffeInfoJSON(initiate=False).get_all_coffee())

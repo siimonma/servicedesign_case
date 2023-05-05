@@ -45,14 +45,20 @@ def search_for():
 
 @app.route('/coffee/<coffee_id>', methods=['GET', 'POST'])
 def get_coffee_info(coffee_id):
+    """Returns all information about 'coffee_id' stored in database."""
+    if not coffeeInfoJSON.coffee_exists(coffee_id=coffee_id):
+        raise APIClientError('Coffee id does not exist.', 404)
+
     if request.method == 'POST':
         token = check_authorization()
         review = check_review_format()
-        coffeeReviewDB.add_review(coffee_id, token, review)
-        return jsonify({'message': f'Added review'}), 201
+        return app.response_class(
+            response=json.dumps(coffeeReviewDB.add_review(coffee_id, token, review)),
+            status=201,
+            mimetype='application/json'
+        )
 
     if request.method == 'GET':
-        # TODO-Check if coffee_id exists in DB.
         # Get information about coffee with id 'coffee_id'
         return app.response_class(
             response=json.dumps(coffeeInfoJSON.get_coffee(coffee_id=coffee_id)),
@@ -60,19 +66,21 @@ def get_coffee_info(coffee_id):
             mimetype='application/json'
         )
 
+    raise APIClientError('Method not allowed', 405)
+
 
 def check_review_format() -> dict:
     """
-    Checks if the POSTed review is in the right format,
+    Checks if the POST:ed review is in the right format,
     raises error otherwise.
     """
     try:
         review = request.get_json()
     except Exception:
-        raise APIClientError('No valid JSON-object in body.')
+        raise APIClientError('Wring format: No valid JSON-object in body.')
 
     if len(review) != 1:
-        raise APIClientError('Wring format: Too many keys in JSON-object.')
+        raise APIClientError('Wrong format: Too many keys in JSON-object.')
 
     try:
         review['review']
@@ -83,12 +91,23 @@ def check_review_format() -> dict:
 
 @app.route('/coffee/<coffee_id>/reviews', methods=['GET'])
 def get_coffee_reviews(coffee_id):
-    return
+    """Returns all coffee reviews connected to 'coffee_id'"""
+    if not coffeeInfoJSON.coffee_exists(coffee_id=coffee_id):
+        raise APIClientError('Coffee id does not exist.', 404)
+    return app.response_class(
+        response=json.dumps(coffeeReviewDB.get_reviews(coffee_id=coffee_id)),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/coffee/reviews', methods=['GET'])
 def get_all_reviews():
-    return
+    return app.response_class(
+        response=json.dumps(coffeeReviewDB.get_reviews()),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 #############################
@@ -134,22 +153,43 @@ def register_user():
     raise APIClientError('Username already exists.', 409)
 
 
-@app.route('/users/<profile_id>', methods=['GET'])
-def get_profile(profile_id):
+@app.route('/users/<user_id>', methods=['GET'])
+def get_profile(user_id):
     """ Responds to URL-request with JSON format user information for id 'profile_id'"""
-    if not coffeeReviewDB.user_exists(user_id=profile_id):
+    if not coffeeReviewDB.user_exists(user_id=user_id):
         raise APIClientError('User does not exists.', 404)
 
     return app.response_class(
-        response=json.dumps(coffeeReviewDB.get_user(profile_id)),
+        response=json.dumps(coffeeReviewDB.get_user(user_id)),
         status=200,
         mimetype='application/json'
     )
 
 
-@app.route('/users/<profile_id>/reviews', methods=['GET'])
-def get_profile_reviews(profile_id):
-    return coffeeReviewDB.get_user_reviews(profile_id), 200
+@app.route('/users/<user_id>/reviews', methods=['GET'])
+def get_profile_reviews(user_id):
+    return coffeeReviewDB.get_reviews(user_id=user_id), 200
+
+
+#############################
+####  USER RELATED PATHS ####
+#############################
+
+
+@app.route('/coffee/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/coffee/<coffee_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/users/<user_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
+def review_modifier(user_id=None, coffee_id=None, review_id=None):
+    if request.method == 'GET':
+        pass
+
+    if request.method == 'PUT':
+        pass
+
+    if request.method == 'DELETE':
+        pass
+
+    return jsonify({'message': f'{review_id}: You made it to the right function'}), 200
 
 
 ################################
