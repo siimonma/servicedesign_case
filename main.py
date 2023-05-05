@@ -12,7 +12,7 @@ coffeeInfoJSON = CoffeInfoJSON(initiate=False)
 
 # SWAGGER UI SETTINGS
 SWAGGER_URL = "/coffee/docs"
-API_URL = os.path.abspath(os.path.dirname(__file__)) + "/documentation/coffeereviews.yaml"
+API_URL = "/static/coffeereviews.yaml"  # os.path.abspath(os.path.dirname(__file__)) +
 
 swaggerui_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
@@ -77,6 +77,8 @@ def get_coffee_info(coffee_id):
 
     if request.method == 'GET':
         # Get information about coffee with id 'coffee_id'
+        if not coffeeInfoJSON.coffee_exists(coffee_id=coffee_id):
+            raise APIClientError('Coffee id does not exist', 404)
         return app.response_class(
             response=json.dumps(coffeeInfoJSON.get_coffee(coffee_id=coffee_id)),
             status=200,

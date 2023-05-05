@@ -7,7 +7,9 @@ OUTLINE:
 - GRUPPEN ARBETSFÖRDELNING
 - RESULTAT
 --- Systembeskrivning
-
+Systemet är uppdelat i fyra större komponenter. Utifrån kundens perspektiv interagerar dem med vår routing-server.
+Servern är uppbyggd av Flask v2.2.3 med python 3.11 i basen. Giltiga HTTP-förfrågningarna som mottas av servern, hanteras
+och behandlas enligt en RESTful akitektur. 
 --- Beskrivning av service design
 --- Beskrivning av slutgiltig funktionalitet och hur den knyter in i Service Design (motivering bakom hur systemet fungerar)
 --- Diskussion: Sammanfatta, framtida förbättringar.
