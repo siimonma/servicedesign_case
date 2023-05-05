@@ -1,0 +1,201 @@
+openapi: 3.0.0
+x-stoplight:
+  id: utvd8kedry3sp
+info:
+  title: Coffee Review API
+  version: '1.0'
+  description: |-
+    This API allows you to create a user profile where you can write reviews of different coffees that you have tried.
+    For now the brands and products are from the swedish selection.
+servers:
+  - url: 'http://localhost:5000'
+paths:
+  /coffee:
+    get:
+      summary: Your GET endpoint
+      tags:
+        - Standard usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/coffees_reponse'
+              examples: {}
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      operationId: get-coffee
+      description: Returns all the coffee in API endpoint.
+  /coffee/search:
+    get:
+      summary: Your GET endpoint
+      responses:
+        '200':
+          description: OK
+          content: {}
+      operationId: get-coffee-search
+      tags:
+        - Standard usage
+      description: 'Search for a coffee product using a search_word parameter. Returns results of the search, zero or more coffee objects.'
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: search_word
+          description: Can be full or part of searched string.
+  '/users/{userId}':
+    parameters:
+      - schema:
+          type: integer
+        name: userId
+        in: path
+        required: true
+        description: Id of an existing user.
+    get:
+      summary: ''
+      operationId: get-users-userId
+      responses:
+        '200':
+          description: OK
+      description: Returns information about a specific user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            examples:
+              Example 1:
+                value:
+                  id: 32
+                  name: Allan Wood
+                  regTime: '2019-08-24'
+  /users/register:
+    post:
+      summary: Create New User
+      operationId: post-users-register
+      responses:
+        '200':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+              examples:
+                Example 1:
+                  value:
+                    token: uaRkfY&kand#kaS==
+        '400':
+          description: Missing Required Information
+        '409':
+          description: Email Already Taken
+      requestBody:
+        content: {}
+        description: Post the necessary fields for the API to create a new user.
+      description: Register a new user and recieve a personal token for authorization.
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: name
+          description: First and last name of user.
+        - schema:
+            type: string
+          in: query
+          name: email
+          description: email address of the user.
+    parameters: []
+  /users:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+      operationId: get-users
+      description: Get all registered users.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Token for authorization.
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      x-examples:
+        Example 1:
+          id: 32
+          name: Allan Wood
+          regTime: '2019-08-24'
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the given user.
+        name:
+          type: string
+          x-stoplight:
+            id: huecktyltfwwm
+        regTime:
+          type: string
+          format: date
+          description: The date that the user was created.
+          x-stoplight:
+            id: e350m60vvidkb
+      required:
+        - id
+        - name
+      description: Non-sensitive user information.
+    Token:
+      title: Token
+      x-stoplight:
+        id: 5rdl6ctwiiomk
+      type: object
+      properties:
+        token:
+          type: string
+          x-stoplight:
+            id: k3s1c4brkdp67
+      x-examples:
+        Example 1:
+          token: uaRkfY&kand#kaS==
+    coffee:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+      x-examples:
+        Example 1:
+          id: '7310731101611'
+          name: ZOÉGAS Hazienda - 450 G
+          url: 'https://www.dittsvenskaskafferi.se/zogas-hazienda-450g-7310731101611'
+      title: ''
+      description: Coffee object in JSON database.
+    coffees_reponse:
+      type: object
+      x-examples:
+        Example 1:
+          coffee:
+            - id: '7310731101611'
+              name: ZOÉGAS Hazienda - 450 G
+              url: 'https://www.dittsvenskaskafferi.se/zogas-hazienda-450g-7310731101611'
+            - id: '7310731101888'
+              name: ZOÉGAS Västkust - 450 G
+              url: 'https://www.dittsvenskaskafferi.se/zogas-vstkust-450g-7310731101888'
+            - id: '7310731102397'
+              name: ZOÉGAS KAHAWA - 450G
+              url: 'https://www.dittsvenskaskafferi.se/zogas-kahawa-450g-7310731102397'
+      properties:
+        coffee:
+          type: array
+          items:
+            $ref: '#/components/schemas/coffee'
+      description: Dictionary structure of coffee objsects returned from JSON database.

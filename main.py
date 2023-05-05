@@ -3,10 +3,27 @@ from case_project.databases.coffee_review_db import CoffeeReviewDB
 from case_project.databases.coffee_info_json import CoffeInfoJSON
 from api_token import Random64Token
 from api_return_code_classes import APIClientError
+from flask_swagger_ui import get_swaggerui_blueprint
+import os
 
 app = Flask(__name__)
 coffeeReviewDB = CoffeeReviewDB()
 coffeeInfoJSON = CoffeInfoJSON(initiate=False)
+
+# SWAGGER UI SETTINGS
+SWAGGER_URL = "/coffee/docs"
+API_URL = os.path.abspath(os.path.dirname(__file__)) + "/documentation/coffeereviews.yaml"
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,  # Swagger UI static files will be mapped to '{SWAGGER_URL}/dist/'
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': "Coffee Review API"
+    }
+)
+
+app.register_blueprint(swaggerui_blueprint)
+
 
 ###############################
 ####  COFFEE RELATED PATHS ####
@@ -171,9 +188,9 @@ def get_profile_reviews(user_id):
     return coffeeReviewDB.get_reviews(user_id=user_id), 200
 
 
-#############################
-####  USER RELATED PATHS ####
-#############################
+###############################
+####  Review RELATED PATHS ####
+###############################
 
 
 @app.route('/coffee/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
