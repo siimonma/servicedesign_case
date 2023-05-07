@@ -22,7 +22,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/coffees_reponse'
-              examples: {}
         '404':
           description: Not Found
         '500':
@@ -32,10 +31,99 @@ paths:
   /coffee/reviews:
     get:
       summary: Your GET endpoint
-      tags: []
-      responses: {}
+      tags:
+        - Standard usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review_response'
+              examples:
+                Example 1:
+                  value:
+                    reviews:
+                      - coffee_id: '123'
+                        id: 11
+                        review: God och fräsch!
+                        time_stamp: '2023-05-04 18:07:54'
+                        user_id: 4
+                      - coffee_id: '7310731101611'
+                        id: 12
+                        review: Smakrik
+                        time_stamp: '2023-05-04 20:11:54'
+                        user_id: 4
+                      - coffee_id: '7310731101611'
+                        id: 13
+                        review: God och så!
+                        time_stamp: '2023-05-04 20:36:49'
+                        user_id: 4
+        '500':
+          description: Internal Server Error
       operationId: get-coffee-reviews
       description: Get all coffee reviews.
+  '/coffee/reviews/{review_id}}':
+    parameters:
+      - schema:
+          type: string
+        name: review_id
+        in: path
+        required: true
+        description: ID number of requested review.
+    get:
+      summary: Your GET endpoint
+      tags:
+        - Standard usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review_response'
+              examples:
+                Example 1:
+                  value:
+                    reviews:
+                      - id: 23
+                        user_id: 32
+                        coffee_id: '0672348832'
+                        review: Too sweet!
+                        time_stamp: '2023-04-13 08:40:21'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Review ID does not exist.
+        '500':
+          description: Internal Server Error
+      operationId: get-coffee-reviews-review_id
+      description: Returns a coffee review with id "review_id".
+    put:
+      summary: ''
+      operationId: put-coffee-reviews-review_id
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/coffees_reponse'
+      description: Change your previously written review if authorized.
+      tags:
+        - Authorized usage
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: authentication
+          description: Authentication token of the user owning the review.
   /coffee/search:
     get:
       summary: Your GET endpoint
@@ -72,6 +160,7 @@ paths:
           type: string
         name: coffee_id
         in: path
+        description: Id of requested coffee.
         required: true
     get:
       summary: Your GET endpoint
@@ -92,6 +181,7 @@ paths:
                 $ref: '#/components/schemas/APIClientError'
       operationId: get-coffee-coffee_id
       description: 'Returns information about coffee object with id: ''coffee_id''.'
+      parameters: []
     post:
       summary: ''
       operationId: post-coffee-coffee_id
@@ -147,6 +237,7 @@ paths:
           type: string
         name: coffee_id
         in: path
+        description: Id of requested coffee.
         required: true
     get:
       summary: Your GET endpoint
@@ -169,6 +260,114 @@ paths:
           description: Internal Server Error
       operationId: get-coffee-coffee_id-reviews
       description: Get all reviews connected to a specific coffee id.
+  /users:
+    get:
+      summary: Your GET endpoint
+      tags:
+        - Authorized usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User_response'
+              examples:
+                Example 1:
+                  value:
+                    users:
+                      - id: 32
+                        username: allanwood
+                        regTime: '2023-05-03 08:27:32'
+      operationId: get-users
+      description: Get all registered users. To be able to retreive all users you need to be have a authorization token. The request returns non-sensitive information only.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: authentication
+          description: Token for authentication.
+  /users/register:
+    post:
+      summary: Create New User
+      operationId: post-users-register
+      responses:
+        '201':
+          description: User Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: object
+                    x-stoplight:
+                      id: lxqhbzaowcrn4
+                    properties:
+                      id:
+                        type: integer
+                        x-stoplight:
+                          id: 76d7wha1u5s6w
+                      username:
+                        type: string
+                        x-stoplight:
+                          id: l7lney34ct2vv
+                      email:
+                        type: string
+                        x-stoplight:
+                          id: qe24u1d1763ke
+                      token:
+                        type: string
+                        x-stoplight:
+                          id: opv4zf6fvkypx
+              examples:
+                Example 1:
+                  value:
+                    created:
+                      id: 32
+                      username: allanwood
+                      email: allanwood@gmail.com
+                      token: uaRkfY&kand#kaS==
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Missing required parameters.
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Username already exists.
+        '500':
+          description: Internal Server Error
+      requestBody:
+        content: {}
+        description: Post the necessary fields for the API to create a new user.
+      description: Register a new user and recieve a personal token for future authorization usage.
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: username
+          description: First and last name of user.
+        - schema:
+            type: string
+          in: query
+          name: email
+          description: email address of the user.
+      tags:
+        - Standard usage
+    parameters: []
   '/users/{userId}':
     parameters:
       - schema:
@@ -178,73 +377,81 @@ paths:
         required: true
         description: Id of an existing user.
     get:
-      summary: ''
+      summary: Your GET endpoint
       operationId: get-users-userId
       responses:
         '200':
           description: OK
-      description: Returns information about a specific user.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-            examples:
-              Example 1:
-                value:
-                  id: 32
-                  name: Allan Wood
-                  regTime: '2019-08-24'
-  /users/register:
-    post:
-      summary: Create New User
-      operationId: post-users-register
-      responses:
-        '200':
-          description: User Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Token'
+                $ref: '#/components/schemas/User_response'
               examples:
                 Example 1:
                   value:
-                    token: uaRkfY&kand#kaS==
-        '400':
-          description: Missing Required Information
-        '409':
-          description: Email Already Taken
+                    users:
+                      - id: 35
+                        username: allanwood
+                        regTime: '2019-08-24T14:15:22Z'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: User does not exist
+        '500':
+          description: Internal Server Error
+      description: Returns non-sensitive information about user with "user_id".
       requestBody:
         content: {}
-        description: Post the necessary fields for the API to create a new user.
-      description: Register a new user and recieve a personal token for authorization.
-      parameters:
-        - schema:
-            type: string
-          in: query
-          name: name
-          description: First and last name of user.
-        - schema:
-            type: string
-          in: query
-          name: email
-          description: email address of the user.
-    parameters: []
-  /users:
+      tags:
+        - Authorized usage
+  '/users/{user_id}/reviews':
+    parameters:
+      - schema:
+          type: string
+        name: user_id
+        in: path
+        description: id of user to filter by.
+        required: true
     get:
       summary: Your GET endpoint
-      tags: []
+      tags:
+        - Standard usage
       responses:
         '200':
           description: OK
-      operationId: get-users
-      description: Get all registered users.
-      parameters:
-        - schema:
-            type: string
-          in: header
-          name: Authorization
-          description: Token for authorization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review_response'
+              examples:
+                Example 1:
+                  value:
+                    reviews:
+                      - id: 11
+                        user_id: 23
+                        coffee_id: '7766500382'
+                        review: Very stasty!
+                        time_stamp: '2023-04-18 12:45:13'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: User does not exist.
+        '500':
+          description: Internal Server Error
+      operationId: get-users-user_id-reviews
+      description: Returns all reviews made by user with id "user_id".
 components:
   schemas:
     User:
@@ -253,39 +460,26 @@ components:
       x-examples:
         Example 1:
           id: 32
-          name: Allan Wood
-          regTime: '2019-08-24'
+          username: allanwood
+          regTime: '2023-05-03 08:34:52'
+      description: Non-sensitive user information.
       properties:
         id:
           type: integer
           description: Unique identifier for the given user.
-        name:
+        username:
           type: string
           x-stoplight:
             id: huecktyltfwwm
         regTime:
           type: string
-          format: date
           description: The date that the user was created.
           x-stoplight:
             id: e350m60vvidkb
+          format: date-time
       required:
         - id
-        - name
-      description: Non-sensitive user information.
-    Token:
-      title: Token
-      x-stoplight:
-        id: 5rdl6ctwiiomk
-      type: object
-      properties:
-        token:
-          type: string
-          x-stoplight:
-            id: k3s1c4brkdp67
-      x-examples:
-        Example 1:
-          token: uaRkfY&kand#kaS==
+        - username
     coffee:
       type: object
       properties:
@@ -387,3 +581,22 @@ components:
                 type: string
       description: Response structure of reviews returned on get request.
       title: Review response
+    User_response:
+      type: object
+      x-examples:
+        Example 1:
+          users:
+            - id: 32
+              username: allanwood
+              regTime: '2023-05-03 08:27:32'
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+      description: Response structure of user request.
+tags:
+  - name: Authorized usage
+    description: API URL where authorization is required.
+  - name: Standard usage
+    description: API URL available without authorization.
