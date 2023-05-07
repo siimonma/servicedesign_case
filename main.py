@@ -165,18 +165,26 @@ def register_user():
     except Exception:
         raise APIClientError('Missing required parameters.', 400)
 
-    if not coffeeReviewDB.user_exists(username=username):
-        token = Random64Token(token_lgth=50).token
-        coffeeReviewDB.add_new_user(username=username, email=email, token=token)
-        return jsonify({'auth_token': token}), 201
-    raise APIClientError('Username already exists.', 409)
+    if coffeeReviewDB.user_exists(username=username):
+        raise APIClientError('Username already exists.', 409)
+
+    token = Random64Token(token_lgth=50).token
+    return app.response_class(
+        response=json.dumps({"created":
+                            coffeeReviewDB.add_new_user(username=username,
+                                                        email=email,
+                                                        token=token)
+                             }),
+        status=201,
+        mimetype='application/json'
+    )
 
 
 @app.route('/users/<user_id>', methods=['GET'])
 def get_profile(user_id):
     """ Responds to URL-request with JSON format user information for id 'profile_id'"""
     if not coffeeReviewDB.user_exists(user_id=user_id):
-        raise APIClientError('User does not exists.', 404)
+        raise APIClientError('User does not exist.', 404)
 
     return app.response_class(
         response=json.dumps(coffeeReviewDB.get_user(user_id)),
@@ -187,6 +195,9 @@ def get_profile(user_id):
 
 @app.route('/users/<user_id>/reviews', methods=['GET'])
 def get_profile_reviews(user_id):
+    if not coffeeReviewDB.user_exists(user_id=user_id):
+        raise APIClientError('User does not exist.', 404)
+
     return coffeeReviewDB.get_reviews(user_id=user_id), 200
 
 
@@ -199,14 +210,38 @@ def get_profile_reviews(user_id):
 @app.route('/coffee/<coffee_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
 @app.route('/users/<user_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
 def review_modifier(user_id=None, coffee_id=None, review_id=None):
+    """Depending on method either returns information about a review,
+    changes the review text or deletes a review from database."""
+    if not coffeeReviewDB.review_exists(review_id=review_id):
+        raise APIClientError(f'Review with review id:{review_id} does not exist.', 404)
+    elif coffee_id and not coffeeInfoJSON.coffee_exists(coffee_id=coffee_id):
+        raise APIClientError(f'Coffee with coffee id:{coffee_id} does not exist.', 404)
+    elif user_id and not coffeeReviewDB.user_exists(user_id=user_id):
+        raise APIClientError(f'User with user id:{user_id} does not exist.', 404)
+
     if request.method == 'GET':
-        pass
+        return app.response_class(
+            response=json.dumps(coffeeReviewDB.get_reviews(review_id=review_id)),
+            status=200,
+            mimetype='application/json'
+        )
 
     if request.method == 'PUT':
-        pass
+        return app.response_class(
+            response=json.dumps(coffeeReviewDB.update_review(review_id=review_id,
+                                                             txt=check_review_format()['review'],
+                                                             token=check_authorization())),
+            status=201,
+            mimetype='application/json'
+        )
 
     if request.method == 'DELETE':
-        pass
+        check_authorization()
+        return app.response_class(
+            response=json.dumps(coffeeReviewDB.delete_review(review_id=review_id, token=check_authorization())),
+            status=201,
+            mimetype='application/json'
+        )
 
     return jsonify({'message': f'{review_id}: You made it to the right function'}), 200
 
