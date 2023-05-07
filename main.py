@@ -10,7 +10,7 @@ app = Flask(__name__)
 coffeeReviewDB = CoffeeReviewDB()
 coffeeInfoJSON = CoffeInfoJSON(initiate=False)
 
-# SWAGGER UI SETTINGS
+ #region SWAGGER UI SETTINGS
 SWAGGER_URL = "/coffee/docs"
 API_URL = "/static/coffeereviews.yaml"  # os.path.abspath(os.path.dirname(__file__)) +
 
@@ -23,11 +23,45 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 )
 
 app.register_blueprint(swaggerui_blueprint)
+#endregion
+
+ #region HELPER FUNCTIONS
 
 
-###############################
-####  COFFEE RELATED PATHS ####
-###############################
+def check_review_format() -> dict:
+    """
+    Checks if the POST:ed review is in the right format,
+    raises error otherwise.
+    """
+    try:
+        review = request.get_json()
+    except Exception:
+        raise APIClientError('Wring format: No valid JSON-object in body.')
+
+    if len(review) != 1:
+        raise APIClientError('Wrong format: Too many keys in JSON-object.')
+
+    try:
+        review['review']
+    except KeyError:
+        raise APIClientError('Wrong format: Missing review key')
+    return review
+
+
+def check_authorization() -> str:
+    """ Checks the request authentication, raises error otherwise."""
+    try:
+        token = request.headers['authentication']
+    except KeyError:
+        raise APIClientError('Authentication token missing in header.', 401)
+
+    if not coffeeReviewDB.is_authorized_user(token):
+        raise APIClientError('Not a valid authentication token.', 401)
+    return token
+
+#endregion
+
+ #region COFFEE RELATED PATHS
 
 
 @app.route('/coffee', methods=['GET', 'POST'])
@@ -88,24 +122,13 @@ def get_coffee_info(coffee_id):
     raise APIClientError('Method not allowed', 405)
 
 
-def check_review_format() -> dict:
-    """
-    Checks if the POST:ed review is in the right format,
-    raises error otherwise.
-    """
-    try:
-        review = request.get_json()
-    except Exception:
-        raise APIClientError('Wring format: No valid JSON-object in body.')
-
-    if len(review) != 1:
-        raise APIClientError('Wrong format: Too many keys in JSON-object.')
-
-    try:
-        review['review']
-    except KeyError:
-        raise APIClientError('Wrong format: Missing review key')
-    return review
+@app.route('/coffee/reviews', methods=['GET'])
+def get_all_reviews():
+    return app.response_class(
+        response=json.dumps(coffeeReviewDB.get_reviews()),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 @app.route('/coffee/<coffee_id>/reviews', methods=['GET'])
@@ -119,31 +142,9 @@ def get_coffee_reviews(coffee_id):
         mimetype='application/json'
     )
 
+#endregion
 
-@app.route('/coffee/reviews', methods=['GET'])
-def get_all_reviews():
-    return app.response_class(
-        response=json.dumps(coffeeReviewDB.get_reviews()),
-        status=200,
-        mimetype='application/json'
-    )
-
-
-#############################
-####  USER RELATED PATHS ####
-#############################
-
-
-def check_authorization() -> str:
-    """ Checks the request authentication, raises error otherwise."""
-    try:
-        token = request.headers['authentication']
-    except KeyError:
-        raise APIClientError('Authentication token missing in header.', 401)
-
-    if not coffeeReviewDB.is_authorized_user(token):
-        raise APIClientError('Not a valid authentication token.', 401)
-    return token
+ #region USER RELATED PATHS
 
 
 @app.route('/users', methods=['GET'])
@@ -200,11 +201,9 @@ def get_profile_reviews(user_id):
 
     return coffeeReviewDB.get_reviews(user_id=user_id), 200
 
+#endregion
 
-###############################
-####  Review RELATED PATHS ####
-###############################
-
+ #region REVIEW RELATED PATHS
 
 @app.route('/coffee/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
 @app.route('/coffee/<coffee_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -245,15 +244,16 @@ def review_modifier(user_id=None, coffee_id=None, review_id=None):
 
     return jsonify({'message': f'{review_id}: You made it to the right function'}), 200
 
+#endregion
 
-################################
-####  RETURN CODE HANDLERS  ####
-################################
+ #region  RETURN CODE HANDLERS
 
 
 @app.errorhandler(APIClientError)
 def client_error(e):
     return jsonify(e.to_dict()), e.status_code
+
+#endregion
 
 
 if __name__ == '__main__':
