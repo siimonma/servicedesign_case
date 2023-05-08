@@ -37,7 +37,7 @@ def check_review_format() -> dict:
     try:
         review = request.get_json()
     except Exception:
-        raise APIClientError('Wring format: No valid JSON-object in body.')
+        raise APIClientError('Wrong format: No valid JSON-object in body.')
 
     if len(review) != 1:
         raise APIClientError('Wrong format: Too many keys in JSON-object.')
@@ -123,8 +123,10 @@ def get_coffee_info(coffee_id):
     raise APIClientError('Method not allowed', 405)
 
 
+@app.route('/users/reviews', methods=['GET'])
 @app.route('/coffee/reviews', methods=['GET'])
 def get_all_reviews():
+    """Returns all reviews in database."""
     return app.response_class(
         response=json.dumps(coffeeReviewDB.get_reviews()),
         status=200,
@@ -206,18 +208,14 @@ def get_profile_reviews(user_id):
 
  #region REVIEW RELATED PATHS
 
+
 @app.route('/coffee/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
-@app.route('/coffee/<coffee_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
-@app.route('/users/<user_id>/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
-def review_modifier(user_id=None, coffee_id=None, review_id=None):
+@app.route('/users/reviews/<review_id>', methods=['GET', 'PUT', 'DELETE'])
+def review_modifier(review_id=None):
     """Depending on method either returns information about a review,
     changes the review text or deletes a review from database."""
     if not coffeeReviewDB.review_exists(review_id=review_id):
         raise APIClientError(f'Review with review id:{review_id} does not exist.', 404)
-    elif coffee_id and not coffeeInfoJSON.coffee_exists(coffee_id=coffee_id):
-        raise APIClientError(f'Coffee with coffee id:{coffee_id} does not exist.', 404)
-    elif user_id and not coffeeReviewDB.user_exists(user_id=user_id):
-        raise APIClientError(f'User with user id:{user_id} does not exist.', 404)
 
     if request.method == 'GET':
         return app.response_class(
@@ -236,14 +234,12 @@ def review_modifier(user_id=None, coffee_id=None, review_id=None):
         )
 
     if request.method == 'DELETE':
-        check_authorization()
         return app.response_class(
-            response=json.dumps(coffeeReviewDB.delete_review(review_id=review_id, token=check_authorization())),
+            response=json.dumps(coffeeReviewDB.delete_review(review_id=review_id,
+                                                             token=check_authorization())),
             status=201,
             mimetype='application/json'
         )
-
-    return jsonify({'message': f'{review_id}: You made it to the right function'}), 200
 
 #endregion
 

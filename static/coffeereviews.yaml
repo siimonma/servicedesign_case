@@ -12,7 +12,7 @@ servers:
 paths:
   /coffee:
     get:
-      summary: Your GET endpoint
+      summary: Return all coffee products
       tags:
         - Standard usage
       responses:
@@ -30,7 +30,7 @@ paths:
       description: Returns all the coffee in API endpoint.
   /coffee/reviews:
     get:
-      summary: Your GET endpoint
+      summary: Return all coffee reviews
       tags:
         - Standard usage
       responses:
@@ -72,7 +72,7 @@ paths:
         required: true
         description: ID number of requested review.
     get:
-      summary: Your GET endpoint
+      summary: Review modification request
       tags:
         - Standard usage
       responses:
@@ -106,7 +106,7 @@ paths:
       operationId: get-coffee-reviews-review_id
       description: Returns a coffee review with id "review_id".
     put:
-      summary: ''
+      summary: Update a review
       operationId: put-coffee-reviews-review_id
       responses:
         '201':
@@ -114,7 +114,66 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/coffees_reponse'
+                $ref: '#/components/schemas/Review'
+              examples:
+                Example 1:
+                  value:
+                    id: 11
+                    user_id: 32
+                    coffe_id: '777283430'
+                    review: NEW_REVIEW TEXT
+                    timestamp: CURRENT_TIMESTAMP
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: 'Wrong format: No valid JSON-object in body.'
+                Example 2:
+                  value:
+                    error: 'Wrong format: Too many keys in JSON-object.'
+                Example 3:
+                  value:
+                    error: 'Wrong format: Missing review key'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Authentication token missing in header.
+                Example 2:
+                  value:
+                    error: Not a valid authentication token.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Token and user missmatch. Can not modify other users reviews!
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: 'Review with ID:11 does not exist.'
+        '500':
+          description: Internal Server Error
       description: Change your previously written review if authorized.
       tags:
         - Authorized usage
@@ -124,9 +183,81 @@ paths:
           in: header
           name: authentication
           description: Authentication token of the user owning the review.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review_post'
+            examples:
+              Example 1:
+                value:
+                  review: Tasty!!
+        description: The new review text.
+    delete:
+      summary: Delete a review
+      operationId: delete-coffee-reviews-review_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+              examples:
+                Example 1:
+                  value:
+                    id: 11
+                    user_id: 32
+                    coffe_id: '8823592034'
+                    review: Tasty!!
+                    timestamp: '2023-04-14 12:09:10'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Authentication token missing in header.
+                Example 2:
+                  value:
+                    error: Not a valid authentication token.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Token and user missmatch. Can not modify other users reviews!
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: 'Review with review id:11 does not exist.'
+        '500':
+          description: Internal Server Error
+      description: Deletes a review from database if authorized.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: authentication
+          description: Authentication token of the user owning the review.
+      tags:
+        - Authorized usage
   /coffee/search:
     get:
-      summary: Your GET endpoint
+      summary: Search for a coffee product
       responses:
         '200':
           description: OK
@@ -163,7 +294,7 @@ paths:
         description: Id of requested coffee.
         required: true
     get:
-      summary: Your GET endpoint
+      summary: Return a coffee product or post review
       tags:
         - Standard usage
       responses:
@@ -183,7 +314,7 @@ paths:
       description: 'Returns information about coffee object with id: ''coffee_id''.'
       parameters: []
     post:
-      summary: ''
+      summary: Post a new review
       operationId: post-coffee-coffee_id
       responses:
         '200':
@@ -240,7 +371,7 @@ paths:
         description: Id of requested coffee.
         required: true
     get:
-      summary: Your GET endpoint
+      summary: Return reviews for a coffee product
       tags:
         - Standard usage
       responses:
@@ -262,7 +393,7 @@ paths:
       description: Get all reviews connected to a specific coffee id.
   /users:
     get:
-      summary: Your GET endpoint
+      summary: Return all users information
       tags:
         - Authorized usage
       responses:
@@ -377,7 +508,7 @@ paths:
         required: true
         description: Id of an existing user.
     get:
-      summary: Your GET endpoint
+      summary: Return user information
       operationId: get-users-userId
       responses:
         '200':
@@ -410,6 +541,42 @@ paths:
         content: {}
       tags:
         - Authorized usage
+  /users/reviews:
+    get:
+      summary: Return all coffee reviews
+      tags:
+        - Standard usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review_response'
+              examples:
+                Example 1:
+                  value:
+                    reviews:
+                      - coffee_id: '123'
+                        id: 11
+                        review: God och fräsch!
+                        time_stamp: '2023-05-04 18:07:54'
+                        user_id: 4
+                      - coffee_id: '7310731101611'
+                        id: 12
+                        review: Smakrik
+                        time_stamp: '2023-05-04 20:11:54'
+                        user_id: 4
+                      - coffee_id: '7310731101611'
+                        id: 13
+                        review: God och så!
+                        time_stamp: '2023-05-04 20:36:49'
+                        user_id: 4
+        '500':
+          description: Internal Server Error
+      operationId: get-users-reviews
+      description: Get all coffee reviews.
+    parameters: []
   '/users/{user_id}/reviews':
     parameters:
       - schema:
@@ -419,7 +586,7 @@ paths:
         description: id of user to filter by.
         required: true
     get:
-      summary: Your GET endpoint
+      summary: Return reviews posted by a user
       tags:
         - Standard usage
       responses:
@@ -452,6 +619,198 @@ paths:
           description: Internal Server Error
       operationId: get-users-user_id-reviews
       description: Returns all reviews made by user with id "user_id".
+  '/users/reviews/{review_id}}':
+    parameters:
+      - schema:
+          type: string
+        name: review_id
+        in: path
+        required: true
+        description: ID number of requested review.
+    get:
+      summary: Review modification request
+      tags:
+        - Standard usage
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review_response'
+              examples:
+                Example 1:
+                  value:
+                    reviews:
+                      - id: 23
+                        user_id: 32
+                        coffee_id: '0672348832'
+                        review: Too sweet!
+                        time_stamp: '2023-04-13 08:40:21'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Review ID does not exist.
+        '500':
+          description: Internal Server Error
+      operationId: get-users-reviews-review_id
+      description: Returns a coffee review with id "review_id".
+    put:
+      summary: Update a review
+      operationId: put-users-reviews-review_id
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+              examples:
+                Example 1:
+                  value:
+                    id: 11
+                    user_id: 32
+                    coffe_id: '777283430'
+                    review: NEW_REVIEW TEXT
+                    timestamp: CURRENT_TIMESTAMP
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: 'Wrong format: No valid JSON-object in body.'
+                Example 2:
+                  value:
+                    error: 'Wrong format: Too many keys in JSON-object.'
+                Example 3:
+                  value:
+                    error: 'Wrong format: Missing review key'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Authentication token missing in header.
+                Example 2:
+                  value:
+                    error: Not a valid authentication token.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Token and user missmatch. Can not modify other users reviews!
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: 'Review with ID:11 does not exist.'
+        '500':
+          description: Internal Server Error
+      description: Change your previously written review if authorized.
+      tags:
+        - Authorized usage
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: authentication
+          description: Authentication token of the user owning the review.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Review_post'
+            examples:
+              Example 1:
+                value:
+                  review: Tasty!!
+        description: The new review text.
+    delete:
+      summary: Delete a review
+      operationId: delete-users-reviews-review_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+              examples:
+                Example 1:
+                  value:
+                    id: 11
+                    user_id: 32
+                    coffe_id: '8823592034'
+                    review: Tasty!!
+                    timestamp: '2023-04-14 12:09:10'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Authentication token missing in header.
+                Example 2:
+                  value:
+                    error: Not a valid authentication token.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: Token and user missmatch. Can not modify other users reviews!
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIClientError'
+              examples:
+                Example 1:
+                  value:
+                    error: 'Review with review id:11 does not exist.'
+        '500':
+          description: Internal Server Error
+      description: Deletes a review from database if authorized.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: authentication
+          description: Authentication token of the user owning the review.
+      tags:
+        - Authorized usage
 components:
   schemas:
     User:
@@ -547,40 +906,26 @@ components:
         Example 1:
           review: Tasteful!
     Review_response:
-      type: object
       x-stoplight:
-        id: 51zia3ngj2iaq
+        id: 8ehiwmx74sny1
+      type: object
       x-examples:
         Example 1:
           reviews:
-            - coffee_id: 7310731101611
-              id: 12
-              review: Smakrik
-              time_stamp: '2023-05-04 20:11:54'
-              user_id: 4
-            - coffee_id: 7310731101611
-              id: 13
-              review: Smakrik
-              time_stamp: '2023-05-04 20:36:49'
-              user_id: 4
+            - id: 11
+              user_id: 32
+              coffe_id: '7758493202'
+              review: Tasty!!
+              timestamp: '2023-04-13 08:43:12'
       properties:
         reviews:
           type: array
+          x-stoplight:
+            id: z4xudvbhm0zbj
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-              user_id:
-                type: integer
-              coffee_id:
-                type: string
-              review:
-                type: string
-              time_stamp:
-                type: string
-      description: Response structure of reviews returned on get request.
-      title: Review response
+            $ref: '#/components/schemas/Review'
+      description: Response from a review GET-request.
+      title: ''
     User_response:
       type: object
       x-examples:
@@ -595,6 +940,27 @@ components:
           items:
             $ref: '#/components/schemas/User'
       description: Response structure of user request.
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        coffe_id:
+          type: string
+        review:
+          type: string
+        timestamp:
+          type: string
+      x-examples:
+        Example 1:
+          id: 11
+          user_id: 32
+          coffe_id: '7758493202'
+          review: Tasty!!
+          timestamp: '2023-04-13 08:43:12'
+      description: Structure for a review json object
 tags:
   - name: Authorized usage
     description: API URL where authorization is required.

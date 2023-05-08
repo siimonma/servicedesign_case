@@ -274,7 +274,7 @@ class CoffeeReviewDB(SqliteDB):
         """ Update review with new text. """
         review = self.get_reviews(review_id=review_id)['reviews'][0]
         if not self.valid_authentication(token, review['user_id']):
-            raise APIClientError(f"Token and user missmatch. Can not update other users reviews!", 403)
+            raise APIClientError(f"Token and user missmatch. Can not modify other users reviews!", 403)
         query = f"""UPDATE Reviews 
                     SET review='{txt}', review_time=CURRENT_TIMESTAMP 
                     WHERE id={review_id}; """
@@ -286,7 +286,7 @@ class CoffeeReviewDB(SqliteDB):
         """ Removes review with id 'review_id' from database. """
         review = self.get_reviews(review_id=review_id)['reviews'][0]
         if not self.valid_authentication(token, review['user_id']):
-            raise APIClientError(f"Token and user missmatch. Can not update other users reviews!", 403)
+            raise APIClientError(f"Token and user missmatch. Can not modify other users reviews!", 403)
         query = f"""DELETE FROM Reviews WHERE id={review_id}"""
         self.execute_query(query=query, delete=True)
         return review
