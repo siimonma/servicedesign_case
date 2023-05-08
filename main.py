@@ -7,6 +7,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 import os
 
 app = Flask(__name__)
+# Initiate Databases
 coffeeReviewDB = CoffeeReviewDB()
 coffeeInfoJSON = CoffeInfoJSON(initiate=False)
 
