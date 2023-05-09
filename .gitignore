@@ -3,7 +3,7 @@
 *.json
 documentation/img
 documentation/presentation
-documentation/Coffee Review API.pdf
+documentation/Coffee_Review_API.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
