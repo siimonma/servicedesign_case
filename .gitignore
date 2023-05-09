@@ -1,3 +1,10 @@
+# Project files
+*.db
+*.json
+/documentation/img
+/documentation/presentation
+/documentation/Coffee Review API.pdf
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

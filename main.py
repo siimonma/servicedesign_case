@@ -9,7 +9,7 @@ import os
 app = Flask(__name__)
 # Initiate Databases
 coffeeReviewDB = CoffeeReviewDB()
-coffeeInfoJSON = CoffeInfoJSON(initiate=False)
+coffeeInfoJSON = CoffeInfoJSON(initiate=True)
 
  #region SWAGGER UI SETTINGS
 SWAGGER_URL = "/coffee/docs"

@@ -109,7 +109,7 @@ class CoffeeReviewDB(SqliteDB):
         CREATE TABLE IF NOT EXISTS Reviews(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER REFERENCES Users(id),
-        coffee_id INTEGER,
+        coffee_id TEXT NOT NULL,
         review TEXT NOT NULL,
         review_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL 
         );

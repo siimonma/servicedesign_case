@@ -52,6 +52,6 @@ class CoffeespiderSpider(scrapy.Spider):
             self.driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
 
             # Break the endless loop
-            if time.time() - start_time >= 10:
+            if time.time() - start_time >= 5:
                 break
 
